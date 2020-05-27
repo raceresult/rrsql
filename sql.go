@@ -3104,7 +3104,7 @@ type Row struct {
 // If more than one row matches the query,
 // Scan uses the first row and discards the rest. If no row matches
 // the query, Scan returns ErrNoRows.
-func (r *Row) Scan(dest ...interface{}) error {
+func (r *Row) Scan(skipNulls bool, dest ...interface{}) error {
 	if r.err != nil {
 		return r.err
 	}
@@ -3135,7 +3135,7 @@ func (r *Row) Scan(dest ...interface{}) error {
 		}
 		return ErrNoRows
 	}
-	err := r.rows.Scan(dest...)
+	err := r.rows.Scan(skipNulls, dest...)
 	if err != nil {
 		return err
 	}
