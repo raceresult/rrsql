@@ -3018,7 +3018,16 @@ func rowsColumnInfoSetupConnLocked(rowsi driver.Rows) []*ColumnType {
 // "select cursor(select * from my_table) from dual", into a
 // *Rows value that can itself be scanned from. The parent
 // select query will close any cursor *Rows if the parent *Rows is closed.
-func (rs *Rows) Scan(skipNulls bool, dest ...interface{}) error {
+func (rs *Rows) Scan(dest ...interface{}) error {
+	return rs.scan(false, dest...)
+}
+
+// ScanSkipNulls is an alternate Scan function with the option to skip null values coming from the db.
+func (rs *Rows) ScanSkipNulls(dest ...interface{}) error {
+	return rs.scan(true, dest...)
+}
+
+func (rs *Rows) scan(skipNulls bool, dest ...interface{}) error {
 	rs.closemu.RLock()
 
 	if rs.lasterr != nil && rs.lasterr != io.EOF {
@@ -3104,7 +3113,7 @@ type Row struct {
 // If more than one row matches the query,
 // Scan uses the first row and discards the rest. If no row matches
 // the query, Scan returns ErrNoRows.
-func (r *Row) Scan(skipNulls bool, dest ...interface{}) error {
+func (r *Row) Scan(dest ...interface{}) error {
 	if r.err != nil {
 		return r.err
 	}
@@ -3135,7 +3144,7 @@ func (r *Row) Scan(skipNulls bool, dest ...interface{}) error {
 		}
 		return ErrNoRows
 	}
-	err := r.rows.Scan(skipNulls, dest...)
+	err := r.rows.Scan(dest...)
 	if err != nil {
 		return err
 	}
