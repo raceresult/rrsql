@@ -1,3 +1,3 @@
-module git.rrdc.de/lib/rrsql
+module github.com/raceresult/rrsql
 
 go 1.14
