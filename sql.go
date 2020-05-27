@@ -3018,7 +3018,7 @@ func rowsColumnInfoSetupConnLocked(rowsi driver.Rows) []*ColumnType {
 // "select cursor(select * from my_table) from dual", into a
 // *Rows value that can itself be scanned from. The parent
 // select query will close any cursor *Rows if the parent *Rows is closed.
-func (rs *Rows) Scan(dest ...interface{}) error {
+func (rs *Rows) Scan(skipNulls bool, dest ...interface{}) error {
 	rs.closemu.RLock()
 
 	if rs.lasterr != nil && rs.lasterr != io.EOF {
@@ -3039,6 +3039,9 @@ func (rs *Rows) Scan(dest ...interface{}) error {
 		return fmt.Errorf("sql: expected %d destination arguments in Scan, not %d", len(rs.lastcols), len(dest))
 	}
 	for i, sv := range rs.lastcols {
+		if skipNulls && sv == nil {
+			continue
+		}
 		err := convertAssignRows(dest[i], sv, rs)
 		if err != nil {
 			return fmt.Errorf(`sql: Scan error on column index %d, name %q: %v`, i, rs.rowsi.Columns()[i], err)
